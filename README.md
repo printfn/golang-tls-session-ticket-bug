@@ -3,7 +3,7 @@
 To reproduce:
 * Run the server: `go run .`
 * Install the .p12 file in the local user's personal certificate store  (password: `password`)
-* Browse to `https://127.0.0.1:8081` in Microsoft Edge and select the client certificate
+* Browse to `https://[::1]:8081` in Microsoft Edge and select the client certificate
 * Edge will produce an error: `ERR_SSL_PROTOCOL_ERROR`
 
 To regenerate the cert:

@@ -31,7 +31,7 @@ func generateCert() (*x509.CertPool, []tls.Certificate, error) {
 		},
 		BasicConstraintsValid: true,
 		DNSNames:              []string{strings.Repeat("a", 18000)},
-		IPAddresses:           []net.IP{net.IPv4(127, 0, 0, 1)},
+		IPAddresses:           []net.IP{net.IPv6loopback},
 	}
 	rootDER, err := x509.CreateCertificate(rand.Reader, rootTemplate, rootTemplate, &rootKey.PublicKey, rootKey)
 	if err != nil {
@@ -100,12 +100,12 @@ func readCert() (*x509.CertPool, []tls.Certificate, error) {
 }
 
 func foo() error {
-	certPool, tlsCertificates, err := readCert()
+	certPool, tlsCertificates, err := generateCert()
 	if err != nil {
 		return fmt.Errorf("failed to generate certificates: %v", err)
 	}
 	server := http.Server{
-		Addr: "127.0.0.1:8081",
+		Addr: "[::1]:8081",
 		TLSConfig: &tls.Config{
 			ClientAuth:   tls.RequireAndVerifyClientCert,
 			Certificates: tlsCertificates,
@@ -139,11 +139,11 @@ func foo() error {
 		return fmt.Errorf("failed to open key log file: %v", err)
 	}
 	server.TLSConfig.KeyLogWriter = w
-	fmt.Printf("listening...\n")
+	fmt.Printf("listening on https://%s\n", server.Addr)
 	server.ListenAndServeTLS("", "")
 	/*go server.ListenAndServeTLS("", "")
 	time.Sleep(time.Second)
-	request, err := http.NewRequest("GET", "https://127.0.0.1:8081/", http.NoBody)
+	request, err := http.NewRequest("GET", "https://[::1]:8081/", http.NoBody)
 	if err != nil {
 		return fmt.Errorf("failed to create http request: %v", err)
 	}
